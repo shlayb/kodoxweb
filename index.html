@@ -158,6 +158,10 @@
       }
       animate();
 
+      function map(value, x1, y1, x2, y2) {
+        return ((value - x1) * (y2 - x2)) / (y1 - x1) + x2;
+      }
+
       // Serial Data Parsing
       let roll, pitch, yaw, radioRoll, radioPitch, radioYaw, throttle, arming, w1, w2, w3, w4;
 
@@ -177,7 +181,7 @@
           w3 = parseFloat(fields[10]);
           w4 = parseFloat(fields[11]);
 
-          let heightbar = '14px';
+          let heightbar = '18px';
 
           const dataBar = document.getElementById('data-bar');
           dataBar.innerHTML = `
@@ -189,11 +193,18 @@
                   <span>Throttle</span>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
-                  <div style="background: #0077ff; width: ${Math.min(Math.abs(roll), 400)}px; height: ${heightbar};"></div>
+                    <div style="background: #0077ff; width: ${Math.min(map(roll, -180, 180, 0, 400), 400)}px; height: ${heightbar};"></div>
                   <div style="background: #00ff00; width: ${Math.min(Math.abs(pitch), 400)}px; height: ${heightbar};"></div>
                   <div style="background: #ff0000; width: ${Math.min(Math.abs(yaw), 400)}px; height: ${heightbar};"></div>
                   <div style="background: #ff8800; width: ${Math.min(Math.abs(throttle), 400)}px; height: ${heightbar};"></div>
                 </div>
+                <div style="display: flex; flex-direction: column; gap: 5px; text-align: left; width: 50px;">
+                  <span>${roll}</span>
+                  <span>${pitch}</span>
+                  <span>${yaw}</span>
+                  <span>${throttle}</span>
+                </div>
+                <div style="background: #ffffff; height: 85px; width: 2px;"></div>
                 <div style="display: flex; flex-direction: column; gap: 5px; text-align: left;">
                   <span>Radio Roll</span>
                   <span>Radio Pitch</span>
@@ -206,6 +217,13 @@
                   <div style="background: #ff0000; width: ${Math.min(Math.abs(radioYaw), 400)}px; height: ${heightbar};"></div>
                   <div style="background: #ff8800; width: ${Math.min(Math.abs(arming), 400)}px; height: ${heightbar};"></div>
                 </div>
+                <div style="display: flex; flex-direction: column; gap: 5px; text-align: left; width: 50px;">
+                  <span>${radioRoll}</span>
+                  <span>${radioPitch}</span>
+                  <span>${radioYaw}</span>
+                  <span>${arming}</span>
+                </div>
+                <div style="background: #ffffff; height: 85px; width: 2px;"></div>
                 <div style="display: flex; flex-direction: column; gap: 5px; text-align: left;">
                   <span>W1</span>
                   <span>W2</span>
@@ -218,9 +236,17 @@
                   <div style="background: #ff8800; width: ${Math.min(Math.abs(w3), 400)}px; height: ${heightbar};"></div>
                   <div style="background: #ff8800; width: ${Math.min(Math.abs(w4), 400)}px; height: ${heightbar};"></div>
                 </div>
+                <div style="display: flex; flex-direction: column; gap: 5px; text-align: left; width: 50px;">
+                  <span>${w1}</span>
+                  <span>${w2}</span>
+                  <span>${w3}</span>
+                  <span>${w4}</span>
+                </div>
             </div>`;
 
           drone.rotation.x = THREE.MathUtils.degToRad(pitch);
+          drone.rotation.y = THREE.MathUtils.degToRad(roll);
+          drone.rotation.z = THREE.MathUtils.degToRad(yaw);
         }
       }
 
