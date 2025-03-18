@@ -59,12 +59,12 @@
       }
       #data-bar {
         position: absolute;
-        top: 200px;
+        top: 100px;
         left: 0;
         width: 100%;
         background: rgba(0, 0, 0, 0.7);
         color: white;
-        padding: 10px;
+        padding: 5px;
         font-family: Arial, sans-serif;
       }
       #connect-button {
@@ -97,6 +97,7 @@
     </style>
   </head>
   <body>
+    <div id="data-bar">Waiting for data...</div>
     <div id="header">
       <a href="https://github.com/yourusername" target="_blank" style="display: flex; align-items: center; text-decoration: none; color: white">
         <svg height="32" width="32" viewBox="0 0 16 16" version="1.1" fill="white">
@@ -106,10 +107,12 @@
           ></path>
         </svg>
       </a>
-      <span>KODOX</span>
+      <span
+        >KODOX
+        <span style="font-size: 20px; font-family: 'Roboto Medium', sans-serif">by SHLAYB</span>
+      </span>
       <button id="connect-button">Connect Serial</button>
     </div>
-    <div id="data-bar">Waiting for data...</div>
 
     <script>
       // Setup Scene
@@ -142,7 +145,8 @@
         const material = new THREE.MeshStandardMaterial({ color: 0x0077ff, metalness: 0.5, roughness: 0.5 });
         drone = new THREE.Mesh(geometry, material);
         drone.scale.set(0.025, 0.025, 0.025);
-        drone.rotation.x = -Math.PI / 2;
+        drone.rotation.x = THREE.MathUtils.degToRad(-90);
+        drone.rotation.z = THREE.MathUtils.degToRad(180);
         scene.add(drone);
       });
 
@@ -155,19 +159,68 @@
       animate();
 
       // Serial Data Parsing
-      function updateDataBar(data) {
-        const fields = data.split(',');
-        if (fields.length === 12) {
-          document.getElementById('data-bar').innerText =
-            `Roll: ${fields[0]} | Pitch: ${fields[1]} | Yaw: ${fields[2]} | ` +
-            `Radio Roll: ${fields[3]} | Radio Pitch: ${fields[4]} | Radio Yaw: ${fields[5]} | ` +
-            `Throttle: ${fields[6]} | Arming: ${fields[7]} | W1: ${fields[8]} | W2: ${fields[9]} | W3: ${fields[10]} | W4: ${fields[11]}`;
+      let roll, pitch, yaw, radioRoll, radioPitch, radioYaw, throttle, arming, w1, w2, w3, w4;
 
-          if (drone) {
-            drone.rotation.x = THREE.MathUtils.degToRad(parseFloat(fields[1]));
-            drone.rotation.y = THREE.MathUtils.degToRad(parseFloat(fields[2]));
-            drone.rotation.z = THREE.MathUtils.degToRad(parseFloat(fields[0]));
-          }
+      function updateDataBar(data) {
+        let fields = data.split(',');
+        if (fields.length === 13) {
+          roll = parseFloat(fields[0]);
+          pitch = parseFloat(fields[1]);
+          yaw = parseFloat(fields[2]);
+          radioRoll = parseFloat(fields[3]);
+          radioPitch = parseFloat(fields[4]);
+          radioYaw = parseFloat(fields[5]);
+          throttle = parseFloat(fields[6]);
+          arming = fields[7];
+          w1 = parseFloat(fields[8]);
+          w2 = parseFloat(fields[9]);
+          w3 = parseFloat(fields[10]);
+          w4 = parseFloat(fields[11]);
+
+          let heightbar = '14px';
+
+          const dataBar = document.getElementById('data-bar');
+          dataBar.innerHTML = `
+            <div style="display: flex; align-items: flex-end; gap: 10px; text-align: center;">
+                <div style="display: flex; flex-direction: column; gap: 5px; text-align: left;">
+                  <span>Roll</span>
+                  <span>Pitch</span>
+                  <span>Yaw</span>
+                  <span>Throttle</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                  <div style="background: #0077ff; width: ${Math.min(Math.abs(roll), 400)}px; height: ${heightbar};"></div>
+                  <div style="background: #00ff00; width: ${Math.min(Math.abs(pitch), 400)}px; height: ${heightbar};"></div>
+                  <div style="background: #ff0000; width: ${Math.min(Math.abs(yaw), 400)}px; height: ${heightbar};"></div>
+                  <div style="background: #ff8800; width: ${Math.min(Math.abs(throttle), 400)}px; height: ${heightbar};"></div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px; text-align: left;">
+                  <span>Radio Roll</span>
+                  <span>Radio Pitch</span>
+                  <span>Radio Yaw</span>
+                  <span>Arming</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                  <div style="background: #0077ff; width: ${Math.min(Math.abs(radioRoll), 400)}px; height: ${heightbar};"></div>
+                  <div style="background: #00ff00; width: ${Math.min(Math.abs(radioPitch), 400)}px; height: ${heightbar};"></div>
+                  <div style="background: #ff0000; width: ${Math.min(Math.abs(radioYaw), 400)}px; height: ${heightbar};"></div>
+                  <div style="background: #ff8800; width: ${Math.min(Math.abs(arming), 400)}px; height: ${heightbar};"></div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px; text-align: left;">
+                  <span>W1</span>
+                  <span>W2</span>
+                  <span>W3</span>
+                  <span>W4</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                  <div style="background: #ff8800; width: ${Math.min(Math.abs(w1), 400)}px; height: ${heightbar};"></div>
+                  <div style="background: #ff8800; width: ${Math.min(Math.abs(w2), 400)}px; height: ${heightbar};"></div>
+                  <div style="background: #ff8800; width: ${Math.min(Math.abs(w3), 400)}px; height: ${heightbar};"></div>
+                  <div style="background: #ff8800; width: ${Math.min(Math.abs(w4), 400)}px; height: ${heightbar};"></div>
+                </div>
+            </div>`;
+
+          drone.rotation.x = THREE.MathUtils.degToRad(pitch);
         }
       }
 
